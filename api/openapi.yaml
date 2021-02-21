@@ -1,0 +1,274 @@
+openapi: 3.0.0
+info:
+  title: Interactive Spectral Exploration
+  license:
+    name: MIT
+  version: 1.0.0
+servers:
+- url: http://localhost:8081
+- url: http://uri.inspex.com:8081
+- url: http://lorenz.inspex.com:8081
+- url: http://overflow.inspex.com:8081
+paths:
+  /filters:
+    get:
+      tags:
+      - InSpEx
+      summary: Get supporter filters
+      operationId: getFilters
+      responses:
+        "200":
+          description: List of supported filters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportedFilters'
+      x-swagger-router-controller: InSpEx
+  /analysis:
+    post:
+      tags:
+      - InSpEx
+      summary: Run an analysis
+      operationId: runAnalysis
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalysisQuery'
+      responses:
+        "200":
+          description: Null response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnalysedSlice'
+                x-content-type: application/json
+      x-swagger-router-controller: InSpEx
+  /slices/{id}:
+    get:
+      tags:
+      - InSpEx
+      summary: Run an analysis
+      operationId: getSlice
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Found slice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Slice'
+        "404":
+          description: Not found
+      x-swagger-router-controller: InSpEx
+components:
+  schemas:
+    AnalysedSlice:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        file:
+          type: string
+        start:
+          type: number
+        end:
+          type: number
+        duration:
+          type: number
+        meta:
+          type: object
+          additionalProperties:
+            type: string
+        x:
+          type: number
+        y:
+          type: number
+        z:
+          type: number
+      example:
+        id: 54830384
+        duration: 127.49
+        file: sounds454.wav
+        name: sounds454.wav-13
+        start: 1006.27
+        end: 1133.76
+        meta:
+          author: "johncage"
+          date: "31.10.2020"
+        x: 5.63737665663332876420099637471139430999755859375
+        y: 2.3021358869347654518833223846741020679473876953125
+        z: 7.061401241503109105224211816675961017608642578125
+    AnalysisQuery:
+      type: object
+      properties:
+        stats:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatFilter'
+        meta:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetaFilter'
+        x:
+          $ref: '#/components/schemas/Stat'
+        y:
+          $ref: '#/components/schemas/Stat'
+        z:
+          $ref: '#/components/schemas/Stat'
+        includeMeta:
+          type: array
+          items:
+            type: string
+        limit:
+          type: integer
+          example: 100
+          default: 100
+    MetaFilter:
+      type: object
+      properties:
+        key:
+          type: string
+          example: author
+        values:
+          type: array
+          items:
+            type: string
+            example: WGX
+      example:
+        key: author
+        values:
+        - john
+        - alice
+        - kim
+    Slice:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        file:
+          type: string
+        start:
+          type: number
+        end:
+          type: number
+        duration:
+          type: number
+        meta:
+          type: object
+          additionalProperties:
+            type: string
+      example:
+        id: 54830384
+        duration: 127.49
+        file: sounds454.wav
+        name: sounds454.wav-13
+        start: 1006.27
+        end: 1133.76
+        meta:
+          author: "johncage"
+          date: "31.10.2020"
+    Stat:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - centroid
+          - confidence
+          - crest
+          - duration
+          - flatness
+          - harmonicity
+          - kurtosis
+          - loudness
+          - peak
+          - peakharm
+          - pitch
+          - rolloff
+          - skewness
+          - spread
+        composition:
+          type: string
+          enum:
+          - mean
+          - stddev
+          - skew
+          - kurtosis
+          - min
+          - median
+          - max
+          - dmean
+          - dstddev
+          - dskew
+          - dkurtosis
+          - dmin
+          - dmedian
+          - dmax
+          - none
+          - value
+      example:
+        composition: mean
+        type: centroid
+    StatFilter:
+      type: object
+      properties:
+        stat:
+          $ref: '#/components/schemas/Stat'
+        start:
+          type: number
+          format: float
+          example: 110
+        end:
+          type: number
+          format: float
+          example: 220
+      example:
+        stat:
+          composition: mean
+          type: centroid
+        start: 110
+        end: 220
+    SupportedFilters:
+      type: object
+      properties:
+        stat:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatFilter'
+        meta:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetaFilter'
+      example:
+        stats:
+        - stat:
+            composition: mean
+            type: centroid
+          start: 110
+          end: 220
+        - stat:
+            composition: stddev
+            type: pitch
+          start: 0
+          end: 10
+        properties:
+        - key: author
+          values:
+          - john
+          - alice
+        - key: category
+          values:
+          - cat-A
+          - cat-B
