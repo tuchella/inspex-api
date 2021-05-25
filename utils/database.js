@@ -24,7 +24,9 @@ const VALID_STAT_PATTERN = RegExp('[a-z]+');
 class Database {
     constructor(config) {
         this.config = config;
-        this.db = new Sqlite(config.get("database.file.path"), { verbose: console.log });
+        const file = config.get("database.file.path");
+        console.log('db file', file);
+        this.db = new Sqlite(file, { verbose: console.log });
     }
 
     entriesIn(table) {
@@ -53,7 +55,7 @@ class Database {
         this.valideteQuery(query);
 
         const stats = query.stats
-            .filter(r => config.includes(r.stat));
+            .filter(r => this.config.includes(r.stat));
         const joins = lists.rmdups(stats.map(r => r.stat.type).concat([query.x.type, query.y.type, query.z.type]))
             .filter(type => type != 'duration')
             .map(type => `INNER JOIN Stats as ${type} ON ${type}.slice_id = slice.slice_id AND ${type}.stat_type = '${type}'`)
@@ -67,7 +69,7 @@ class Database {
             .map((_, i) => `meta${i}.value as meta${i},`)
             .join(' ');
 
-        let conds = stats.map(formatFilter)
+        let conds = stats.map(this.formatFilter)
             .join(' AND ');
         const params = {}
         stats.forEach(r => {
