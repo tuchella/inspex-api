@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "prestart": "npm install",
-    "start": "nodemon index.js --watch service --watch utils"
+    "start": "node index.js",
+    "serve": "nodemon index.js --watch service --watch utils"
   },
   "keywords": [
     "swagger"
